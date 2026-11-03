@@ -1,0 +1,1495 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Studio Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              primary: {
+                50: "#f5f3ff",
+                100: "#ede9fe",
+                500: "#8b5cf6",
+                600: "#7c3aed",
+                700: "#6d28d9",
+                900: "#4c1d95",
+              },
+              brand: {
+                bg: "#f0f2f5",
+                card: "#ffffff",
+                text: "#1f2937",
+                muted: "#6b7280",
+                sidebar: "#ffffff",
+              },
+            },
+            boxShadow: {
+              soft: "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+              card: "0 2px 10px rgba(0, 0, 0, 0.04)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        background-color: #f0f2f5;
+        color: #1f2937;
+      }
+
+      /* Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e5e7eb;
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #d1d5db;
+      }
+
+      /* Sidebar Active State */
+      .sidebar-item.active {
+        color: #6d28d9;
+        font-weight: 600;
+        background-color: #f5f3ff;
+      }
+      .sidebar-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 60%;
+        width: 3px;
+        background-color: #7c3aed;
+        border-radius: 0 4px 4px 0;
+      }
+
+      /* Dark Mode Global Overrides */
+      html.dark body {
+        background-color: #111827;
+        color: #f3f4f6;
+      }
+      html.dark .bg-brand-bg {
+        background-color: #111827 !important;
+      }
+      html.dark .bg-brand-sidebar,
+      html.dark aside,
+      html.dark header {
+        background-color: #1f2937 !important;
+        border-color: #374151 !important;
+      }
+      html.dark .bg-white {
+        background-color: #1f2937 !important;
+        border-color: #374151 !important;
+        color: #f3f4f6 !important;
+      }
+      html.dark .bg-white\/90,
+      html.dark .label-contrast-badge {
+        background-color: rgba(31, 41, 55, 0.9) !important;
+        color: #f3f4f6 !important;
+      }
+      html.dark .label-contrast {
+        background-color: #374151 !important;
+        color: #f3f4f6 !important;
+        border: 1px solid #4b5563 !important;
+      }
+      html.dark .text-gray-800,
+      html.dark .text-gray-700,
+      html.dark h2,
+      html.dark h3,
+      html.dark h4 {
+        color: #f3f4f6 !important;
+      }
+      html.dark .text-gray-600,
+      html.dark .text-gray-500 {
+        color: #9ca3af !important;
+      }
+      html.dark .border-gray-100,
+      html.dark .border-gray-200 {
+        border-color: #374151 !important;
+      }
+      html.dark .hover\:bg-gray-50:hover {
+        background-color: #374151 !important;
+      }
+      html.dark .bg-gray-50,
+      html.dark .bg-gray-100 {
+        background-color: #374151 !important;
+        color: #d1d5db !important;
+      }
+      html.dark input {
+        background-color: #111827 !important;
+        color: #fff !important;
+        border-color: #374151 !important;
+      }
+      html.dark .shadow-sm,
+      html.dark .shadow-card {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+      }
+
+      /* Sidebar Info Box Dark Mode Overrides */
+      html.dark #sidebarInfoBox {
+        background-color: #374151 !important;
+        border-color: #4b5563 !important;
+      }
+      html.dark #sidebarInfoBoxTitle {
+        color: #f3f4f6 !important;
+      }
+      html.dark #sidebarInfoBoxDesc {
+        color: #9ca3af !important;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen p-0 md:p-3 lg:p-4 flex justify-center overflow-hidden transition-colors duration-300"
+  >
+    <div
+      class="max-w-[1600px] w-full bg-brand-bg md:rounded-3xl shadow-xl flex flex-col md:flex-row overflow-hidden relative md:border border-white/50 h-screen md:h-[calc(100vh-1.5rem)] lg:h-[calc(100vh-2rem)]"
+    >
+      <!-- Mobile Sidebar Overlay -->
+      <div
+        id="sidebarOverlay"
+        class="fixed inset-0 bg-gray-900/40 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"
+        onclick="toggleSidebar()"
+      ></div>
+
+      <!-- SIDEBAR -->
+      <aside
+        id="sidebar"
+        class="fixed md:static inset-y-0 left-0 w-[270px] bg-brand-sidebar z-50 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out border-r border-gray-100 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-full md:rounded-l-3xl"
+      >
+        <!-- Logo Area -->
+        <div
+          class="px-3.5 py-3 flex items-center justify-between flex-shrink-0"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 rounded-xl bg-primary-600 text-white flex items-center justify-center font-bold text-base shadow-sm"
+            >
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <span class="font-bold text-base text-gray-800 tracking-tight"
+              >AI Studio</span
+            >
+          </div>
+          <button
+            onclick="toggleSidebar()"
+            class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-500 hover:text-gray-800"
+          >
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 overflow-y-auto py-2 custom-scrollbar">
+          <ul class="space-y-1" id="categoryMenu">
+            <!-- Categories injected via JS -->
+          </ul>
+        </nav>
+
+        <!-- Info Box -->
+        <div class="px-4 py-4 mt-auto flex-shrink-0">
+          <div
+            id="sidebarInfoBox"
+            class="bg-[#faf5ff] rounded-2xl p-4 border border-[#e9d5ff] relative overflow-hidden transition-colors"
+          >
+            <div class="relative z-10">
+              <div class="flex items-center gap-2 mb-1.5">
+                <i
+                  class="fa-solid fa-wand-magic-sparkles text-[#7e22ce] text-[16px]"
+                ></i>
+                <h4
+                  id="sidebarInfoBoxTitle"
+                  class="font-bold text-[#581c87] text-[15px] tracking-tight transition-colors"
+                >
+                  AI Studio
+                </h4>
+              </div>
+              <p
+                id="sidebarInfoBoxDesc"
+                class="text-[12px] font-medium text-[#7e22ce] leading-relaxed transition-colors"
+              >
+                Catatan: AI Studio hanya untuk penggunaan pribadi. Hasilnya
+                boleh dijual, tetapi tools/akses AI Studio tidak boleh dijual
+                atau dibagikan kembali.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main
+        class="flex-1 flex flex-col min-w-0 bg-brand-bg h-full overflow-hidden relative"
+      >
+        <!-- Top Header -->
+        <header
+          class="px-4 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-4 sticky top-0 z-30 bg-brand-bg/95 backdrop-blur-md flex-shrink-0 transition-colors duration-300"
+        >
+          <div class="flex items-center gap-3 sm:gap-4 flex-1">
+            <button
+              onclick="toggleSidebar()"
+              class="md:hidden w-10 h-10 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center text-gray-600 hover:text-primary-600 transition-colors"
+            >
+              <i class="fa-solid fa-bars text-lg"></i>
+            </button>
+
+            <!-- Search Bar -->
+            <div class="relative w-full max-w-xl">
+              <div
+                class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+              >
+                <i class="fa-solid fa-search text-gray-400 text-sm"></i>
+              </div>
+              <input
+                type="text"
+                id="searchInput"
+                oninput="handleSearch()"
+                placeholder="Cari alat AI, spesifik gambar, judul aktivitas, atau nama file..."
+                class="w-full pl-11 pr-4 py-2 bg-white border border-gray-100 rounded-full text-sm shadow-card focus:outline-none focus:ring-2 focus:ring-primary-500/40 text-gray-700 placeholder-gray-400 transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Right Header Actions -->
+          <div class="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+            <button
+              onclick="toggleDarkMode()"
+              class="w-10 h-10 rounded-full bg-white shadow-card flex items-center justify-center text-gray-500 hover:text-primary-600 transition-colors border border-gray-100 text-base"
+              title="Toggle Dark/Light Mode"
+            >
+              <i
+                class="fa-solid fa-moon transition-transform duration-300"
+                id="themeIcon"
+              ></i>
+            </button>
+            <div
+              class="w-10 h-10 rounded-full overflow-hidden shadow-card cursor-pointer ml-1 border border-gray-200"
+            >
+              <img
+                src="https://lh3.googleusercontent.com/d/1W1DmpcAYpZm5x91l7Z6RcpdScnqUYJq6=w100"
+                alt="Profile"
+                class="w-full h-full object-cover"
+                onerror="
+                  this.onerror = null;
+                  this.src =
+                    'https://placehold.co/100x100/8b5cf6/ffffff?text=User';
+                "
+              />
+            </div>
+          </div>
+        </header>
+
+        <!-- Scrollable Content Area -->
+        <div
+          class="flex-1 overflow-y-auto p-4 sm:p-6 pt-2 sm:pt-3 custom-scrollbar"
+          id="mainScrollArea"
+        >
+          <!-- Hero Banner -->
+          <div
+            id="aiBannerContainer"
+            class="bg-[#2c3070] bg-gradient-to-r from-[#292265] to-[#40388d] rounded-2xl p-5 sm:p-6 mb-5 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden transition-all duration-500"
+          >
+            <!-- Watermark Icon -->
+            <div
+              class="absolute right-12 md:right-24 bottom-[-20px] opacity-15 text-[12rem] md:text-[14rem] pointer-events-none transition-all duration-500"
+              id="bannerWatermark"
+            >
+              <i class="fa-solid fa-toolbox" id="watermarkIcon"></i>
+            </div>
+
+            <div class="flex-1 z-10 relative w-full text-center md:text-left">
+              <div
+                id="bannerBadge"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-bold tracking-wider uppercase mb-2 text-purple-200 label-contrast-badge"
+              >
+                <i class="fa-solid fa-wand-magic-sparkles text-yellow-300"></i>
+                Direktori Resmi
+              </div>
+              <h1
+                class="text-xl lg:text-2xl font-bold mb-2 tracking-tight"
+                id="bannerTitle"
+              >
+                Semua Koleksi AI Tools & Asisten
+              </h1>
+              <p
+                class="text-indigo-100 text-sm max-w-2xl mx-auto md:mx-0 leading-relaxed"
+                id="bannerDesc"
+              >
+                Pilih AI Assistant favoritmu dan mulai buat worksheet, aktivitas
+                anak, cerita, hingga materi edukasi interaktif dengan mudah dan
+                cepat.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-col xl:flex-row gap-5">
+            <!-- Left Column (Main Grids) -->
+            <div class="flex-1 min-w-0">
+              <!-- Header for Grid -->
+              <div class="flex items-center justify-between mb-3">
+                <h2
+                  class="text-lg font-bold text-gray-800 tracking-tight"
+                  id="sectionTitle"
+                >
+                  Popular Results
+                </h2>
+                <span
+                  id="productCountInfo"
+                  class="text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-100 px-2.5 py-1 rounded-md"
+                ></span>
+              </div>
+
+              <!-- All Tools Special View -->
+              <div id="allToolsSection" class="hidden mb-6">
+                <div
+                  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+                  id="toolsGridContainer"
+                >
+                  <!-- Rendered via JS -->
+                </div>
+              </div>
+
+              <!-- Product Grid (Portrait Cards) -->
+              <div
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+                id="productGrid"
+              >
+                <div
+                  class="col-span-full flex justify-center py-10"
+                  id="loadingState"
+                >
+                  <div
+                    class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div
+                id="paginationContainer"
+                class="mt-8 mb-6 flex justify-center items-center gap-2"
+              ></div>
+            </div>
+
+            <!-- Right Column (Widgets with Accordions) -->
+            <div
+              class="w-full xl:w-[320px] flex-shrink-0 flex flex-col gap-5 pb-6"
+            >
+              <!-- Widget 1: Tutorial Pembuatan Tool (Accordion) -->
+              <div
+                class="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden"
+              >
+                <button
+                  onclick="toggleAccordion('content-tutorial', 'icon-tutorial')"
+                  class="w-full p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors focus:outline-none"
+                >
+                  <div class="flex items-center gap-3">
+                    <i class="fa-brands fa-youtube text-red-500 text-lg"></i>
+                    <h3 class="font-bold text-gray-800 text-base">
+                      Tutorial Tools
+                    </h3>
+                  </div>
+                  <i
+                    id="icon-tutorial"
+                    class="fa-solid fa-chevron-up text-gray-400 text-sm transition-transform duration-300"
+                  ></i>
+                </button>
+
+                <div
+                  id="content-tutorial"
+                  class="px-4 pb-4 transition-all duration-300 space-y-3.5 block"
+                >
+                  <a
+                    href="https://youtu.be/BGqUk-mBBy8?si=L3CK__lvNUckaX23"
+                    target="_blank"
+                    class="flex items-center gap-3.5 p-2.5 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100 group"
+                  >
+                    <div
+                      class="w-20 h-12 bg-gray-200 rounded-lg relative overflow-hidden flex-shrink-0 shadow-sm"
+                    >
+                      <img
+                        src="https://img.youtube.com/vi/BGqUk-mBBy8/mqdefault.jpg"
+                        alt="ChatGPT Tutorial"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div
+                        class="absolute inset-0 bg-black/20 flex items-center justify-center"
+                      >
+                        <i
+                          class="fa-solid fa-play text-white text-xs drop-shadow-md"
+                        ></i>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h4
+                        class="text-[13px] font-bold text-gray-800 leading-snug group-hover:text-primary-600 transition-colors"
+                      >
+                        Cara Membuat Tools di ChatGPT
+                      </h4>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://youtu.be/zzlmRAmtJjU?si=DASEU8sPcq5nAlEU"
+                    target="_blank"
+                    class="flex items-center gap-3.5 p-2.5 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100 group"
+                  >
+                    <div
+                      class="w-20 h-12 bg-gray-200 rounded-lg relative overflow-hidden flex-shrink-0 shadow-sm"
+                    >
+                      <img
+                        src="https://img.youtube.com/vi/zzlmRAmtJjU/mqdefault.jpg"
+                        alt="Gemini Tutorial"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div
+                        class="absolute inset-0 bg-black/20 flex items-center justify-center"
+                      >
+                        <i
+                          class="fa-solid fa-play text-white text-xs drop-shadow-md"
+                        ></i>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h4
+                        class="text-[13px] font-bold text-gray-800 leading-snug group-hover:text-primary-600 transition-colors"
+                      >
+                        Cara Membuat Tools di Gemini
+                      </h4>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Widget 2: Master Folder (Accordion) -->
+              <div
+                class="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden"
+                id="masterFolderWidgetWrapper"
+              >
+                <button
+                  onclick="toggleAccordion('content-folder', 'icon-folder')"
+                  class="w-full p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors focus:outline-none"
+                >
+                  <h3 class="font-bold text-gray-800 text-base">
+                    Master Folder
+                  </h3>
+                  <i
+                    id="icon-folder"
+                    class="fa-solid fa-chevron-up text-gray-400 text-sm transition-transform duration-300"
+                  ></i>
+                </button>
+
+                <div
+                  id="content-folder"
+                  class="px-4 pb-5 transition-all duration-300 block"
+                >
+                  <div class="flex items-center gap-3.5 mb-4">
+                    <div
+                      class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center text-green-600 flex-shrink-0 text-lg shadow-sm"
+                    >
+                      <i class="fa-brands fa-google-drive"></i>
+                    </div>
+                    <p
+                      class="text-sm text-gray-600 leading-relaxed flex-1 font-medium"
+                    >
+                      Akses arsip seluruh file untuk kategori ini.
+                    </p>
+                  </div>
+
+                  <a
+                    href="#"
+                    id="masterFolderBtn"
+                    target="_blank"
+                    class="w-full py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-800 text-[13px] font-bold rounded-lg flex items-center justify-center gap-2.5 border border-gray-200 transition-colors shadow-sm"
+                  >
+                    Buka Google Drive
+                    <i
+                      class="fa-solid fa-arrow-up-right-from-square text-xs"
+                    ></i>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Widget 3: Featured Tools (Accordion) -->
+              <div
+                class="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden flex flex-col max-h-[460px]"
+              >
+                <button
+                  onclick="toggleAccordion('content-tools', 'icon-tools')"
+                  class="w-full p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors focus:outline-none flex-shrink-0"
+                >
+                  <h3 class="font-bold text-gray-800 text-base">
+                    Featured Tools
+                  </h3>
+                  <i
+                    id="icon-tools"
+                    class="fa-solid fa-chevron-up text-gray-400 text-sm transition-transform duration-300"
+                  ></i>
+                </button>
+
+                <div
+                  id="content-tools"
+                  class="px-4 pb-4 overflow-y-auto flex-1 custom-scrollbar block transition-all duration-300"
+                >
+                  <div class="space-y-2.5" id="featuredToolsWidget">
+                    <!-- Injected via JS -->
+                  </div>
+                  <div class="mt-4 pt-1">
+                    <button
+                      class="w-full py-2.5 text-[12px] font-bold text-primary-600 hover:text-primary-700 uppercase tracking-wide bg-primary-50 hover:bg-primary-100 rounded-xl transition-colors border border-primary-100 shadow-sm"
+                      onclick="changeCategory('MORE_TOOLS')"
+                    >
+                      View All Tools
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Copyright Footer -->
+          <div
+            class="mt-10 mb-2 pt-6 pb-4 border-t border-gray-200/60 flex flex-col items-center justify-center w-full"
+          >
+            <p class="text-[12px] text-gray-500 font-medium text-center">
+              &copy; 2026 Produk Digital by
+              <a
+                href="https://lynk.id/ikanuraisma"
+                target="_blank"
+                class="text-primary-600 font-bold tracking-wide hover:underline hover:text-primary-500 transition-colors"
+                >Ikanuraisma</a
+              >. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      let currentCategory = "Home";
+      let searchQuery = "";
+      let currentPage = 1;
+      const itemsPerPage = 9;
+
+      // Master Folders mapped per category
+      const masterFolders = {
+        Home: "https://drive.google.com/drive/folders/1Krdb2RW2IifKtSoDLcx-iexL5g-M2-Jp?usp=sharing",
+        "Coloring Worksheet":
+          "https://drive.google.com/drive/folders/1U32kw1xa-MOfHKFgEpbZvo1mUT-1TsO6?usp=sharing",
+        "Cover Creator":
+          "https://drive.google.com/drive/folders/1HSsCHtQ96kUGG_gq6qKARF18wqZ1fLfn?usp=sharing",
+        "Storybook Creator":
+          "https://drive.google.com/drive/folders/1ipBm1gZCem9MkSU8MBJmF3_hd4xsjf9Y?usp=sharing",
+        "Hijaiyah Worksheet":
+          "https://drive.google.com/drive/folders/1q_YK7ZLzTrJyRjEeBzl2_h2_CA_cCiYZ?usp=sharing",
+        "Trace Alphabet & Number":
+          "https://drive.google.com/drive/folders/1q_YK7ZLzTrJyRjEeBzl2_h2_CA_cCiYZ?usp=sharing",
+        "SmartTeacher AI":
+          "https://drive.google.com/drive/folders/1Krdb2RW2IifKtSoDLcx-iexL5g-M2-Jp?usp=sharing",
+        "Business Planner":
+          "https://drive.google.com/drive/folders/1Krdb2RW2IifKtSoDLcx-iexL5g-M2-Jp?usp=sharing",
+      };
+
+      // Category Configuration with updated and newly added tools
+      const categoryConfig = {
+        "Coloring Worksheet": {
+          icon: "fa-palette",
+          colorClass: "text-purple-600",
+          bgClass: "bg-purple-100 text-purple-800",
+          bannerGradient: "from-purple-500 to-indigo-600",
+          toolUrl:
+            "https://chatgpt.com/g/g-6a5b1bd51db08191bea612c9a9550676-coloring-worksheet-studio-ai",
+          desc: "Hasilkan lembar kerja mewarnai kreatif secara instan.",
+          hasImage: true,
+        },
+        "Cover Creator": {
+          icon: "fa-image",
+          colorClass: "text-amber-600",
+          bgClass: "bg-amber-100 text-amber-800",
+          bannerGradient: "from-amber-500 to-orange-600",
+          toolUrl:
+            "https://chatgpt.com/g/g-6a6448fb18848191b54258964d9e675b-cover-worksheet-product-studio-ai",
+          desc: "Desain cover produk worksheet yang menarik dan profesional.",
+          hasImage: true,
+        },
+        "Storybook Creator": {
+          icon: "fa-book-open",
+          colorClass: "text-pink-600",
+          bgClass: "bg-pink-100 text-pink-800",
+          bannerGradient: "from-pink-500 to-rose-600",
+          toolUrl:
+            "https://chatgpt.com/g/g-6a5ed05b00c88191b49e2f8b0b028e8c-storybook-generated-ai",
+          desc: "Buat cerita bergambar anak yang mendidik.",
+          hasImage: true,
+        },
+        "Hijaiyah Worksheet": {
+          icon: "fa-pen-nib",
+          colorClass: "text-emerald-600",
+          bgClass: "bg-emerald-100 text-emerald-800",
+          bannerGradient: "from-emerald-500 to-teal-600",
+          toolUrl:
+            "https://gemini.google.com/share/a2b09cbf0be7?skid=22563c90-fbc2-4e9b-870b-173886024fd0",
+          desc: "Latihan menulis dan melacak huruf hijaiyah interaktif.",
+          hasImage: true,
+        },
+        "Trace Alphabet & Number": {
+          icon: "fa-font",
+          colorClass: "text-rose-600",
+          bgClass: "bg-rose-100 text-rose-800",
+          bannerGradient: "from-rose-500 to-pink-600",
+          toolUrl:
+            "https://gemini.google.com/share/62b9f480d93a?skid=e0e267cc-055c-4835-9ed9-29d3f3f275fe",
+          desc: "Latihan menulis dan melacak huruf alphabet dan angka.",
+          hasImage: true,
+        },
+        "SmartTeacher AI": {
+          icon: "fa-chalkboard-user",
+          colorClass: "text-blue-600",
+          bgClass: "bg-blue-100 text-blue-800",
+          bannerGradient: "from-blue-600 to-indigo-700",
+          toolUrl:
+            "https://chatgpt.com/g/g-6a76def8f1e48191a1655f64812f420d-smartteacher-ai",
+          desc: "Asisten guru cerdas untuk perancangan modul ajar dan kurikulum.",
+          hasImage: false,
+        },
+        "Business Planner": {
+          icon: "fa-chart-pie",
+          colorClass: "text-teal-600",
+          bgClass: "bg-teal-100 text-teal-800",
+          bannerGradient: "from-teal-500 to-emerald-600",
+          toolUrl:
+            "https://gemini.google.com/share/014cd0473b13?skid=c311055f-cf8d-43f8-bac8-dcf55c8f0bc1",
+          desc: "Rencana strategi bisnis dan digital marketing terstruktur.",
+          hasImage: false,
+        },
+        "Prompter Game AI": {
+          icon: "fa-gamepad",
+          colorClass: "text-indigo-600",
+          bgClass: "bg-indigo-100 text-indigo-800",
+          bannerGradient: "from-indigo-500 to-purple-600",
+          toolUrl:
+            "https://gemini.google.com/gem/1GjBmlZ2k6YKrWVqPO-6DY2bSaR0b0olj?usp=sharing",
+          desc: "Rancang skenario game edukatif dengan Canva AI.",
+          hasImage: false,
+        },
+        "Content Carousel Social Media": {
+          icon: "fa-images",
+          colorClass: "text-sky-600",
+          bgClass: "bg-sky-100 text-sky-800",
+          bannerGradient: "from-sky-500 to-blue-600",
+          toolUrl: "https://share.gemini.google/PWeJwLY9kaBw",
+          desc: "Buat konten carousel sosial media dengan mudah.",
+          hasImage: false,
+          isNew: true,
+        },
+        "Script AI": {
+          icon: "fa-file-lines",
+          colorClass: "text-cyan-600",
+          bgClass: "bg-cyan-100 text-cyan-800",
+          bannerGradient: "from-cyan-500 to-blue-600",
+          toolUrl:
+            "https://gemini.google.com/share/0123f0101748?skid=9478a5bf-2caf-41ad-bb19-f4b1473f7a75",
+          desc: "Generator script AI untuk berbagai kebutuhan konten.",
+          hasImage: false,
+        },
+        "Matching Generator AI": {
+          icon: "fa-puzzle-piece",
+          colorClass: "text-fuchsia-600",
+          bgClass: "bg-fuchsia-100 text-fuchsia-800",
+          bannerGradient: "from-fuchsia-500 to-purple-600",
+          toolUrl: "https://share.gemini.google/lwyHFK1Vi96W",
+          desc: "Buat permainan mencocokkan (matching game) edukatif dengan mudah.",
+          hasImage: false,
+          isNew: true,
+        },
+        // Penambahan Tool Baru: Prompter Kuis & Game Interaktif
+        "Prompter Kuis & Game Interaktif": {
+          icon: "fa-clipboard-question",
+          colorClass: "text-orange-600",
+          bgClass: "bg-orange-100 text-orange-800",
+          bannerGradient: "from-orange-500 to-red-600",
+          toolUrl: "https://edusmartcreator-prompter-kuis-game.netlify.app/",
+          desc: "Generator kuis dan game interaktif untuk pembelajaran yang menyenangkan.",
+          hasImage: false,
+          isNew: true,
+        },
+        // Penambahan Tool Baru: Media Pembelajaran Interaktif
+        "Media Pembelajaran Interaktif": {
+          icon: "fa-laptop-code",
+          colorClass: "text-lime-600",
+          bgClass: "bg-lime-100 text-lime-800",
+          bannerGradient: "from-lime-500 to-green-600",
+          toolUrl: "https://edusmartcreatorlab-media-pembljaran.netlify.app/",
+          desc: "Buat media pembelajaran interaktif untuk meningkatkan pengalaman belajar dan partisipasi siswa.",
+          hasImage: false,
+          isNew: true,
+        },
+        // Penambahan Tool Baru: Worksheet Studio Ai
+        "Worksheet Studio Ai": {
+          icon: "fa-file-pen",
+          colorClass: "text-violet-600",
+          bgClass: "bg-violet-100 text-violet-800",
+          bannerGradient: "from-violet-500 to-purple-600",
+          toolUrl: "https://share.gemini.google/q81LjvoAXODv",
+          desc: "Buat lembar kerja (worksheet) edukatif secara instan dan kustom dengan AI.",
+          hasImage: false,
+          isNew: true,
+        },
+      };
+
+      // Product database mapped to respective categories
+      const allProducts = [
+        // Coloring Worksheet
+        {
+          title: "Apel",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai apel.",
+          image:
+            "https://lh3.googleusercontent.com/d/1cGRMREgFE-DG2XUTk3rQl416MWxYKMeg=w800",
+        },
+        {
+          title: "Anggur",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai anggur.",
+          image:
+            "https://lh3.googleusercontent.com/d/1LgpPwV78QTn9jaeFfITbdd06pIdKMvrA=w800",
+        },
+        {
+          title: "Kangkung",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai kangkung.",
+          image:
+            "https://lh3.googleusercontent.com/d/1tzrPDsLa1s3BRZcvkYwYyuK55q5BzCpK=w800",
+        },
+        {
+          title: "Sawi",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai sawi.",
+          image:
+            "https://lh3.googleusercontent.com/d/1KFm8XP925eTux0lGDHOIzZ5qGLXR4oJ5=w800",
+        },
+        {
+          title: "Pesawat",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai pesawat.",
+          image:
+            "https://lh3.googleusercontent.com/d/1A0ifZ_0XBe5diVLDEKd_QdulsdGfkP8q=w800",
+        },
+        {
+          title: "Kereta",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai kereta.",
+          image:
+            "https://lh3.googleusercontent.com/d/1KsZicU5betIZS23887_7-YLGyM05WW2v=w800",
+        },
+        {
+          title: "Kucing",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai kucing.",
+          image:
+            "https://lh3.googleusercontent.com/d/1YCt2DNac5EVSmXTTA3DiNZXu-2iz4U_M=w800",
+        },
+        {
+          title: "Singa",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai singa.",
+          image:
+            "https://lh3.googleusercontent.com/d/11yR22PHN31J9XnISw8YRr3tImWuCBf8v=w800",
+        },
+        {
+          title: "Paus",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai paus.",
+          image:
+            "https://lh3.googleusercontent.com/d/1aFot9bCtx_QABkGqwmItRriVELq2YNAC=w800",
+        },
+        {
+          title: "Hiu",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai hiu.",
+          image:
+            "https://lh3.googleusercontent.com/d/1DrL8S9RXp6D35n9h9JSTv6JQX_mKXnMM=w800",
+        },
+        {
+          title: "Dokter",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai profesi dokter.",
+          image:
+            "https://lh3.googleusercontent.com/d/1PsTE-rlNs7pFakxnS12Y2sQLUkHxRq5t=w800",
+        },
+        {
+          title: "Perawat",
+          category: "Coloring Worksheet",
+          desc: "Worksheet mewarnai profesi perawat.",
+          image:
+            "https://lh3.googleusercontent.com/d/1qy3yac2GGPG-tFANSsxQ3rLwMKEXi1uN=w800",
+        },
+
+        // Storybook Creator
+        {
+          title: "Putri Kirana",
+          category: "Storybook Creator",
+          desc: "Cerita Putri Kirana.",
+          image:
+            "https://lh3.googleusercontent.com/d/1ipBm1gZCem9MkSU8MBJmF3_hd4xsjf9Y=w800",
+        },
+        {
+          title: "Putri Kirana & Selendang",
+          category: "Storybook Creator",
+          desc: "Cerita Putri Kirana dan Selendang.",
+          image:
+            "https://lh3.googleusercontent.com/d/1iI9c8Fyn8ixKYJ-1rlrUagkmzXrQxUBa=w800",
+        },
+        {
+          title: "Luna Penyihir Kecil",
+          category: "Storybook Creator",
+          desc: "Cerita Luna Penyihir Kecil.",
+          image:
+            "https://lh3.googleusercontent.com/d/1o-RyRLISXFO_1KOvfEwO1drXASjasr2a=w800",
+        },
+        {
+          title: "Luna Terbang dg Sapu",
+          category: "Storybook Creator",
+          desc: "Luna terbang dengan sapu Ajaib.",
+          image:
+            "https://lh3.googleusercontent.com/d/1IhrFlKlJndT4u8rQiW03Kpg6mWElsGYG=w800",
+        },
+        {
+          title: "Petualangan Kelinci",
+          category: "Storybook Creator",
+          desc: "Cerita Petualangan Kelinci.",
+          image:
+            "https://lh3.googleusercontent.com/d/1rsUdze_RNp34E-hhUHtiWkZwaZFz_3qv=w800",
+        },
+        {
+          title: "Kelinci Menyebrang",
+          category: "Storybook Creator",
+          desc: "Kelinci Menyebrang Sungai.",
+          image:
+            "https://lh3.googleusercontent.com/d/1IPRJ-iT5DVo25MS3mi5RlyHkBl865mnS=w800",
+        },
+
+        // Cover Creator
+        {
+          title: "Tema Hewan Laut",
+          category: "Cover Creator",
+          desc: "Cover tema hewan laut.",
+          image:
+            "https://lh3.googleusercontent.com/d/1Cpf0DRrKl8__mip-broPHTuqgKTRYfev=w800",
+        },
+        {
+          title: "Tema Princess",
+          category: "Cover Creator",
+          desc: "Cover tema Princess.",
+          image:
+            "https://lh3.googleusercontent.com/d/1qo8pB9MQn4vLWWO46JWltHjRB8g0Udl4=w800",
+        },
+        {
+          title: "Macam Profesi",
+          category: "Cover Creator",
+          desc: "Cover tema macam profesi.",
+          image:
+            "https://lh3.googleusercontent.com/d/1_z4u97dNBGBY2lu15ZS-CZqlJDG3cLLD=w800",
+        },
+        {
+          title: "Planet Luar Angkasa",
+          category: "Cover Creator",
+          desc: "Cover tema planet.",
+          image:
+            "https://lh3.googleusercontent.com/d/1btLT_Zz4tPv26sMDIF-cQDKMub5JU_js=w800",
+        },
+        {
+          title: "Belajar Menulis",
+          category: "Cover Creator",
+          desc: "Cover belajar menulis.",
+          image:
+            "https://lh3.googleusercontent.com/d/1wIFfOLXmvqXH26JcY5ECe0Xiu7cUazxg=w800",
+        },
+        {
+          title: "Game Interaktif",
+          category: "Cover Creator",
+          desc: "Cover game interaktif.",
+          image:
+            "https://lh3.googleusercontent.com/d/1wMgxjmIh-bdtCSa3-Ed10wYSKPg5JCC-=w800",
+        },
+        {
+          title: "Tema Vegetable",
+          category: "Cover Creator",
+          desc: "Cover tema sayuran.",
+          image:
+            "https://lh3.googleusercontent.com/d/12rUuJcNZzameU8nwpa6cjWQS0S7wCWAT=w800",
+        },
+
+        // Hijaiyah Worksheet
+        {
+          title: "Alif",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Alif.",
+          image:
+            "https://lh3.googleusercontent.com/d/15WE0lShkOwJdMZZ9nIY_kCnrTap3hS-h=w800",
+        },
+        {
+          title: "Dha",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Dha.",
+          image:
+            "https://lh3.googleusercontent.com/d/1heYWT8SSg7RmquYGEhY3qU2BEdOJBq4k=w800",
+        },
+        {
+          title: "Ba",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Ba.",
+          image:
+            "https://lh3.googleusercontent.com/d/1kL0imLH9vWi2pfdOKL9Qsvj-v-MQ-Yds=w800",
+        },
+        {
+          title: "Ghain",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Ghain.",
+          image:
+            "https://lh3.googleusercontent.com/d/1HxFujWzU-uoegeLAF6v-KgAcyLlWQqvI=w800",
+        },
+        {
+          title: "Shad",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Shad.",
+          image:
+            "https://lh3.googleusercontent.com/d/1qDxFJ6_Vp_uzcnozd7CW7LTxZBa_uO-2=w800",
+        },
+        {
+          title: "Sin",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Sin.",
+          image:
+            "https://lh3.googleusercontent.com/d/1qHjggF68qO-43J8FJrx_9TKe4iBaUq9Y=w800",
+        },
+        {
+          title: "La",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah La.",
+          image:
+            "https://lh3.googleusercontent.com/d/1pdCBvy3D7MEOZMF-m9RRjtqY9h3mIhbY=w800",
+        },
+        {
+          title: "Wa",
+          category: "Hijaiyah Worksheet",
+          desc: "Tracing huruf hijaiyah Wa.",
+          image:
+            "https://lh3.googleusercontent.com/d/1BkbRI2R8kU3zRreGVYzdpPf-tb1fV-KE=w800",
+        },
+
+        // Trace Alphabet & Number
+        {
+          title: "A Animal",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing huruf A dengan tema hewan.",
+          image:
+            "https://lh3.googleusercontent.com/d/1MN6cA3IjifAmDzcESXB8-dgHqMA3jY9o=w800",
+        },
+        {
+          title: "A Transportation",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing huruf A tema transportasi.",
+          image:
+            "https://lh3.googleusercontent.com/d/1EuOiKw61fvzodgcwfEelx-y6T0cpRbmS=w800",
+        },
+        {
+          title: "A Airplane",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing huruf A tema pesawat.",
+          image:
+            "https://lh3.googleusercontent.com/d/1xedHkU8TG9b7ufn4RZbaK9pgDgWl6Hnv=w800",
+        },
+        {
+          title: "A Armor",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing huruf A tema armor.",
+          image:
+            "https://lh3.googleusercontent.com/d/1zP_mWKKpjOnfCLlZthGXyWTK2bEsvO5n=w800",
+        },
+        {
+          title: "D Dinosaurus",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing huruf D tema dinosaurus.",
+          image:
+            "https://lh3.googleusercontent.com/d/1CqVK5onuqWmLJQzfne7zJVixndcBl4jU=w800",
+        },
+        {
+          title: "1 One",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing angka 1 satu.",
+          image:
+            "https://lh3.googleusercontent.com/d/17Pb63QLevc1Uw2TmMqRuNwAVHx3hUZFA=w800",
+        },
+        {
+          title: "2 Two",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing angka 2 dua.",
+          image:
+            "https://lh3.googleusercontent.com/d/19vK5IC25jz83EWunRMKSN_egHOZ0r8R7=w800",
+        },
+        {
+          title: "2 Seahorses",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing angka 2 tema kuda laut.",
+          image:
+            "https://lh3.googleusercontent.com/d/1AlXKK-cc8KxHxdlpnZ-dJ6KMRQbq1g4H=w800",
+        },
+        {
+          title: "9 Nine",
+          category: "Trace Alphabet & Number",
+          desc: "Tracing angka 9 sembilan.",
+          image:
+            "https://lh3.googleusercontent.com/d/1dA1bA7bmHB0Wvfb6l4NkoffOqcZHDimy=w800",
+        },
+      ];
+
+      allProducts.forEach((p, index) => {
+        p.id = index + 1;
+      });
+
+      function toggleAccordion(contentId, iconId) {
+        const content = document.getElementById(contentId);
+        const icon = document.getElementById(iconId);
+
+        if (content.classList.contains("hidden")) {
+          content.classList.remove("hidden");
+          icon.style.transform = "rotate(0deg)";
+        } else {
+          content.classList.add("hidden");
+          icon.style.transform = "rotate(180deg)";
+        }
+      }
+
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        if (sidebar.classList.contains("-translate-x-full")) {
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.remove("hidden");
+        } else {
+          sidebar.classList.add("-translate-x-full");
+          overlay.classList.add("hidden");
+        }
+      }
+
+      function renderSidebar() {
+        const menu = document.getElementById("categoryMenu");
+        let html = "";
+
+        const isHome = currentCategory === "Home";
+        html += `
+                <li class="px-3 mb-1.5">
+                    <a href="#" onclick="changeCategory('Home'); return false;" class="sidebar-item relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl transition-colors text-[15px] ${isHome ? "active" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}">
+                        <i class="fa-solid fa-house w-5 text-center text-[16px] ${isHome ? "text-primary-600" : "text-gray-400"}"></i>
+                        <span class="font-semibold">Home</span>
+                    </a>
+                </li>
+                <li class="px-4 pt-3 pb-2">
+                    <span class="text-[12px] font-bold text-gray-400 uppercase tracking-wider">Generators</span>
+                </li>
+            `;
+
+        const aiCategories = Object.keys(categoryConfig).filter(
+          (cat) => categoryConfig[cat].hasImage,
+        );
+
+        aiCategories.forEach((cat) => {
+          const isActive = currentCategory === cat;
+          const config = categoryConfig[cat];
+          html += `
+                    <li class="px-3 mb-1.5">
+                        <a href="#" onclick="changeCategory('${cat}'); return false;" class="sidebar-item relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl transition-colors text-[15px] ${isActive ? "active" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}">
+                            <i class="fa-solid ${config.icon} w-5 text-center text-[16px] ${isActive ? "text-primary-600" : "text-gray-400"}"></i>
+                            <span class="font-semibold truncate">${cat}</span>
+                        </a>
+                    </li>
+                `;
+        });
+
+        const isMore = currentCategory === "MORE_TOOLS";
+        html += `
+                <li class="px-4 pt-3 pb-2">
+                    <span class="text-[12px] font-bold text-gray-400 uppercase tracking-wider">Explore</span>
+                </li>
+                <li class="px-3 mb-1.5">
+                    <a href="#" onclick="changeCategory('MORE_TOOLS'); return false;" class="sidebar-item relative flex items-center gap-3.5 px-3 py-2.5 rounded-xl transition-colors text-[15px] ${isMore ? "active" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}">
+                        <i class="fa-solid fa-compass w-5 text-center text-[16px] ${isMore ? "text-primary-600" : "text-gray-400"}"></i>
+                        <span class="font-semibold">Semua Direktori Tools</span>
+                    </a>
+                </li>
+            `;
+
+        menu.innerHTML = html;
+      }
+
+      function changeCategory(category) {
+        currentCategory = category;
+        currentPage = 1;
+
+        renderSidebar();
+        updateBanner();
+        updateWidgets();
+
+        if (category === "MORE_TOOLS") {
+          document.getElementById("productGrid").classList.add("hidden");
+          document.getElementById("allToolsSection").classList.remove("hidden");
+          document.getElementById("sectionTitle").innerText =
+            "Direktori Semua AI Tools";
+          document.getElementById("paginationContainer").style.display = "none";
+          renderAllTools();
+        } else {
+          document.getElementById("allToolsSection").classList.add("hidden");
+          document.getElementById("productGrid").classList.remove("hidden");
+          document.getElementById("sectionTitle").innerText =
+            category === "Home" ? "Popular Results" : `${category} Results`;
+          renderProducts();
+        }
+
+        if (window.innerWidth < 768) {
+          toggleSidebar();
+        }
+
+        const scrollArea = document.getElementById("mainScrollArea");
+        if (scrollArea) scrollArea.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function handleSearch() {
+        searchQuery = document
+          .getElementById("searchInput")
+          .value.toLowerCase();
+        currentPage = 1;
+        if (currentCategory === "MORE_TOOLS") {
+          renderAllTools();
+        } else {
+          renderProducts();
+        }
+      }
+
+      function updateBanner() {
+        const banner = document.getElementById("aiBannerContainer");
+        banner.className =
+          "rounded-2xl p-5 sm:p-6 mb-5 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden transition-all duration-500";
+
+        if (currentCategory === "Home" || currentCategory === "MORE_TOOLS") {
+          banner.classList.add(
+            "bg-gradient-to-r",
+            "from-[#292265]",
+            "to-[#40388d]",
+          );
+          banner.innerHTML = `
+                    <div class="absolute right-12 md:right-24 bottom-[-20px] opacity-15 text-[12rem] md:text-[14rem] pointer-events-none transition-all duration-500">
+                        <i class="fa-solid fa-toolbox"></i>
+                    </div>
+                    <div class="flex-1 z-10 relative w-full text-center md:text-left">
+                        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-bold tracking-wider uppercase mb-2 text-purple-200 label-contrast-badge">
+                            <i class="fa-solid fa-wand-magic-sparkles text-yellow-300"></i> Direktori Resmi
+                        </div>
+                        <h1 class="text-xl lg:text-2xl font-bold mb-2 tracking-tight">Semua Koleksi AI Tools & Asisten</h1>
+                        <p class="text-indigo-100 text-sm max-w-2xl mx-auto md:mx-0 leading-relaxed">Pilih AI Assistant favoritmu dan mulai buat worksheet, aktivitas anak, cerita, hingga materi edukasi interaktif dengan mudah dan cepat.</p>
+                    </div>
+                `;
+        } else if (categoryConfig[currentCategory]) {
+          const config = categoryConfig[currentCategory];
+          banner.classList.add(
+            "bg-gradient-to-r",
+            ...config.bannerGradient.split(" "),
+          );
+          const btnColor = config.colorClass || "text-primary-600";
+
+          banner.innerHTML = `
+                    <div class="absolute right-12 md:right-24 bottom-[-20px] opacity-15 text-[12rem] pointer-events-none transition-all duration-500">
+                        <i class="fa-solid ${config.icon}"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full">
+                        <div class="flex flex-row items-center gap-6 sm:gap-8 flex-1 w-full">
+                            <div class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl sm:text-4xl text-white shadow-inner flex-shrink-0">
+                                <i class="fa-solid ${config.icon}"></i>
+                            </div>
+                            <div class="flex flex-col flex-1 justify-center">
+                                <span class="bg-white/20 text-white text-[10px] font-bold px-3.5 py-1 rounded-full uppercase tracking-wider w-max mb-2 backdrop-blur-sm shadow-sm">
+                                    AI Generator Studio
+                                </span>
+                                <h1 class="text-xl lg:text-2xl font-bold mb-2 tracking-tight text-white leading-tight">
+                                    ${currentCategory}
+                                </h1>
+                                <p class="text-white/90 text-sm max-w-2xl leading-relaxed line-clamp-2">
+                                    ${config.desc}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-auto mt-2 md:mt-0 flex-shrink-0">
+                            <a href="${config.toolUrl}" target="_blank" class="w-full md:w-auto text-center px-6 py-3 bg-white ${btnColor} font-bold text-[13px] sm:text-[14px] rounded-xl hover:bg-gray-50 hover:shadow-lg transition-all flex items-center justify-center gap-2.5 whitespace-nowrap shadow-md">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Akses Tool AI
+                            </a>
+                        </div>
+                    </div>
+                `;
+        }
+      }
+
+      function updateWidgets() {
+        const widgetWrapper = document.getElementById(
+          "masterFolderWidgetWrapper",
+        );
+        const btn = document.getElementById("masterFolderBtn");
+
+        if (masterFolders[currentCategory]) {
+          widgetWrapper.style.display = "block";
+          btn.href = masterFolders[currentCategory];
+        } else {
+          widgetWrapper.style.display = "none";
+        }
+
+        const toolsWidget = document.getElementById("featuredToolsWidget");
+        let toolsHtml = "";
+
+        Object.keys(categoryConfig).forEach((cat) => {
+          const cfg = categoryConfig[cat];
+          const newBadge = cfg.isNew
+            ? `<span class="bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse ml-2">NEW</span>`
+            : "";
+
+          toolsHtml += `
+                    <div class="flex items-center gap-3.5 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-gray-100 group" onclick="changeCategory('${cat}')">
+                        <div class="w-11 h-11 rounded-xl ${cfg.bgClass} flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                            <i class="fa-solid ${cfg.icon} ${cfg.colorClass} text-base"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-[15px] font-bold text-gray-800 truncate group-hover:text-primary-600 transition-colors flex items-center">${cat} ${newBadge}</h4>
+                            <p class="text-[12px] text-gray-500 truncate mt-0.5">${cfg.desc}</p>
+                        </div>
+                    </div>
+                `;
+        });
+        toolsWidget.innerHTML = toolsHtml;
+      }
+
+      function renderProducts() {
+        const grid = document.getElementById("productGrid");
+        let filteredProducts = allProducts.filter(
+          (p) => categoryConfig[p.category]?.hasImage !== false,
+        );
+
+        if (currentCategory !== "Home") {
+          filteredProducts = filteredProducts.filter(
+            (p) => p.category === currentCategory,
+          );
+        }
+        if (searchQuery) {
+          filteredProducts = filteredProducts.filter(
+            (p) =>
+              p.title.toLowerCase().includes(searchQuery) ||
+              p.desc.toLowerCase().includes(searchQuery) ||
+              p.category.toLowerCase().includes(searchQuery),
+          );
+        }
+
+        const totalItems = filteredProducts.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+        if (currentPage > totalPages && totalPages > 0)
+          currentPage = totalPages;
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const toRender = filteredProducts.slice(start, start + itemsPerPage);
+
+        document.getElementById("productCountInfo").innerText =
+          totalItems > 0
+            ? `Showing ${start + 1}-${Math.min(start + itemsPerPage, totalItems)} of ${totalItems}`
+            : "0 Results";
+
+        let html = "";
+        if (toRender.length === 0) {
+          html = `<div class="col-span-full py-10 text-center text-gray-500 bg-white rounded-2xl border border-gray-100 text-[13px]">Tidak ada hasil ditemukan.</div>`;
+        } else {
+          toRender.forEach((p) => {
+            const cfg = categoryConfig[p.category] || {};
+            const hasImage = p.image && p.image.trim() !== "";
+
+            let imageContent = "";
+            if (hasImage) {
+              imageContent = `<img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/400x533/e2e8f0/64748b?text=Broken+Link'">`;
+            } else {
+              imageContent = `<div class="w-full h-full flex flex-col items-center justify-center ${cfg.bgClass || "bg-gray-100"} group-hover:scale-105 transition-transform duration-500">
+                                            <i class="fa-solid ${cfg.icon || "fa-image"} text-5xl mb-2 opacity-50 ${cfg.colorClass || "text-gray-500"}"></i>
+                                            <span class="text-[10px] font-semibold opacity-60">No Image</span>
+                                        </div>`;
+            }
+
+            let aiBadgeText = "AI";
+            if (cfg.toolUrl) {
+              if (cfg.toolUrl.includes("chatgpt.com")) aiBadgeText = "GPT";
+              else if (
+                cfg.toolUrl.includes("gemini") ||
+                cfg.toolUrl.includes("share.gemini.google")
+              )
+                aiBadgeText = "Gemini";
+              else if (cfg.toolUrl.includes("netlify.app"))
+                aiBadgeText = "WebApp";
+            }
+
+            html += `
+                        <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300 hover:border-primary-100 flex flex-col">
+                            <div class="aspect-[3/4] w-full rounded-xl overflow-hidden mb-3.5 relative bg-gray-50">
+                                ${imageContent}
+                                <div class="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-bold text-gray-700 shadow-sm flex items-center gap-1.5 label-contrast-badge">
+                                    <i class="fa-solid fa-sparkles text-yellow-500 text-xs"></i> ${aiBadgeText}
+                                </div>
+                            </div>
+                            <div class="px-0.5 flex flex-col flex-1">
+                                <h3 class="font-bold text-gray-800 text-[15px] leading-snug mb-1.5 line-clamp-2 group-hover:text-primary-700 transition-colors">${p.title}</h3>
+                                <p class="text-[13px] text-gray-500 line-clamp-2 mb-3.5 flex-1">${p.desc}</p>
+                                <div class="flex items-center mt-auto">
+                                    <span class="label-contrast text-xs font-bold px-2.5 py-1 ${cfg.bgClass || "bg-gray-100"} rounded-md text-gray-700 uppercase tracking-wider truncate max-w-full">${p.category}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+          });
+        }
+        grid.innerHTML = html;
+        renderPagination(totalPages);
+      }
+
+      function renderAllTools() {
+        const container = document.getElementById("toolsGridContainer");
+        let categories = Object.keys(categoryConfig);
+
+        if (searchQuery) {
+          categories = categories.filter(
+            (cat) =>
+              cat.toLowerCase().includes(searchQuery) ||
+              categoryConfig[cat].desc.toLowerCase().includes(searchQuery),
+          );
+        }
+
+        let html = "";
+        categories.forEach((cat) => {
+          const cfg = categoryConfig[cat];
+          let aiBadgeText = "AI";
+          if (cfg.toolUrl) {
+            if (cfg.toolUrl.includes("chatgpt.com")) aiBadgeText = "GPT";
+            else if (
+              cfg.toolUrl.includes("gemini") ||
+              cfg.toolUrl.includes("share.gemini.google")
+            )
+              aiBadgeText = "Gemini";
+            else if (cfg.toolUrl.includes("netlify.app"))
+              aiBadgeText = "WebApp";
+          }
+
+          // Inject badge NEW secara dinamis
+          const newBadge = cfg.isNew
+            ? `<span class="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse shadow-sm">NEW</span>`
+            : "";
+
+          html += `
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col h-full hover:shadow-md transition-all duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl ${cfg.bgClass} flex items-center justify-center text-lg shadow-sm label-contrast">
+                                <i class="fa-solid ${cfg.icon} ${cfg.colorClass}"></i>
+                            </div>
+                            <span class="label-contrast bg-primary-50 text-primary-600 text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border border-primary-100">${aiBadgeText}</span>
+                        </div>
+                        <h3 class="font-bold text-gray-800 text-[15px] mb-2 flex items-center gap-2">
+                            ${cat} ${newBadge}
+                        </h3>
+                        <p class="text-[12px] text-gray-500 flex-1 mb-5 leading-relaxed line-clamp-3">${cfg.desc}</p>
+                        <div class="pt-3.5 border-t border-gray-100 mt-auto">
+                            <a href="${cfg.toolUrl}" target="_blank" class="w-full py-2.5 bg-gray-50 hover:bg-primary-600 hover:text-white text-gray-700 text-[13px] font-bold rounded-xl text-center transition-all duration-300 border border-gray-200 hover:border-transparent flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-wand-magic-sparkles text-[12px]"></i> Buka Tool
+                            </a>
+                        </div>
+                    </div>
+                `;
+        });
+
+        container.innerHTML =
+          html ||
+          `<div class="col-span-full py-8 text-center text-gray-500 bg-white rounded-2xl border border-gray-100 text-[13px]">Tidak ada tools yang cocok.</div>`;
+        document.getElementById("productCountInfo").innerText =
+          `${categories.length} Tools`;
+      }
+
+      function renderPagination(totalPages) {
+        const container = document.getElementById("paginationContainer");
+        if (totalPages <= 1) {
+          container.style.display = "none";
+          return;
+        }
+
+        container.style.display = "flex";
+        let html = "";
+
+        html += `<button onclick="currentPage=Math.max(1, currentPage-1); renderProducts();" class="w-8 h-8 rounded-lg flex items-center justify-center ${currentPage === 1 ? "text-gray-300 cursor-not-allowed bg-white border border-gray-100" : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"}"><i class="fa-solid fa-chevron-left text-[11px]"></i></button>`;
+
+        for (let i = 1; i <= totalPages; i++) {
+          html += `<button onclick="currentPage=${i}; renderProducts();" class="w-8 h-8 rounded-lg flex items-center justify-center text-[13px] font-bold transition-all ${currentPage === i ? "bg-primary-600 text-white shadow-md" : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"}">${i}</button>`;
+        }
+
+        html += `<button onclick="currentPage=Math.min(${totalPages}, currentPage+1); renderProducts();" class="w-8 h-8 rounded-lg flex items-center justify-center ${currentPage === totalPages ? "text-gray-300 cursor-not-allowed bg-white border border-gray-100" : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm"}"><i class="fa-solid fa-chevron-right text-[11px]"></i></button>`;
+
+        container.innerHTML = html;
+      }
+
+      function toggleDarkMode() {
+        const htmlTag = document.documentElement;
+        const themeIcon = document.getElementById("themeIcon");
+
+        htmlTag.classList.toggle("dark");
+
+        themeIcon.style.transform = "rotate(360deg)";
+        setTimeout(() => {
+          themeIcon.style.transform = "rotate(0deg)";
+        }, 300);
+
+        if (htmlTag.classList.contains("dark")) {
+          themeIcon.classList.remove("fa-moon");
+          themeIcon.classList.add("fa-sun");
+          themeIcon.classList.add("text-yellow-500");
+        } else {
+          themeIcon.classList.remove("fa-sun");
+          themeIcon.classList.remove("text-yellow-500");
+          themeIcon.classList.add("fa-moon");
+        }
+      }
+
+      // Initialize App
+      document.addEventListener("DOMContentLoaded", () => {
+        changeCategory("Home");
+      });
+    </script>
+  </body>
+</html>
